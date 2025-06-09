@@ -27,7 +27,7 @@ export function FuturisticHero() {
   }, []);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+    <section className="relative flex items-center justify-center overflow-hidden pt-20 pb-16 md:pt-32 md:min-h-screen">
       {/* Floating Elements */}
       {isClient && (
         <div className="absolute inset-0 pointer-events-none">
@@ -92,20 +92,20 @@ export function FuturisticHero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.6 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto"
           >
-            <Button 
-              size="lg" 
-              className="glass glow-border bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-semibold px-8 py-6 text-lg group"
+            <Button
+              size="lg"
+              className="glass glow-border bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-semibold px-8 py-6 text-lg group w-full sm:w-auto"
             >
               Explorar Catálogo
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
             
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="lg"
-              className="glass border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 px-8 py-6 text-lg"
+              className="glass border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 px-8 py-6 text-lg w-full sm:w-auto"
             >
               Ver Ofertas Especiales
               <Zap className="ml-2 w-5 h-5" />
@@ -117,7 +117,7 @@ export function FuturisticHero() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.2, duration: 0.8 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16"
+            className="mt-12 flex snap-x snap-mandatory gap-4 overflow-x-auto md:overflow-visible md:grid md:grid-cols-3 md:gap-6"
           >
             {[
               {
@@ -141,7 +141,7 @@ export function FuturisticHero() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.4 + index * 0.2, duration: 0.6 }}
-                className="glass p-6 rounded-2xl hover:bg-white/10 transition-all duration-300 group"
+                className="glass p-6 rounded-2xl flex-shrink-0 w-72 md:w-auto hover:bg-white/10 transition-all duration-300 group"
               >
                 <feature.icon className="w-8 h-8 text-cyan-400 mx-auto mb-4 group-hover:scale-110 transition-transform" />
                 <h3 className="font-orbitron text-lg font-semibold text-white mb-2">
