@@ -1,381 +1,466 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
+  Mic,
   ShoppingCart,
   User,
-  Menu,
-  X,
-  Heart,
-  LogIn,
-  UserPlus,
+  Grid as GridIcon,
   Cpu,
   Gamepad2,
   Server,
   Wifi,
   Home,
   Headphones,
-  Grid,
   Zap,
+  X,
+  ChevronRight,
+  Sparkle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
-} from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 
+// --- Datos de categorías (completo)
 const categories = [
   {
     name: 'Gaming y Streaming',
     icon: Gamepad2,
-    subcategories: [
+    sub: [
       'Productos Digitales',
       'Juegos Digitales',
       'Accesorios Gaming',
       'Streaming',
+      'Tarjetas de regalo',
+      'Monitores Gaming',
     ],
   },
   {
     name: 'Computación',
     icon: Cpu,
-    subcategories: [
+    sub: [
       'Notebooks',
       'PCs Armados',
       'All-in-One',
       'Tabletas',
       'Tabletas Gráficas',
       'Periféricos',
+      'Monitores',
+      'Sillas Gamer',
     ],
   },
   {
     name: 'Componentes',
     icon: Server,
-    subcategories: [
+    sub: [
       'Tarjetas de Video',
       'Procesadores',
       'Placas Madre',
       'Memorias RAM',
       'Almacenamiento',
       'Fuentes de Poder',
+      'Coolers',
+      'Gabinetes',
+      'Ventiladores',
     ],
   },
   {
     name: 'Conectividad y Redes',
     icon: Wifi,
-    subcategories: [
+    sub: [
       'Routers',
       'Switches',
       'Cables de Red',
       'Tarjetas de Red',
       'Puntos de Acceso',
+      'Wi-Fi Mesh',
+      'Adaptadores Bluetooth',
     ],
   },
   {
     name: 'Hogar y Oficina',
     icon: Home,
-    subcategories: [
+    sub: [
       'Impresoras',
       'Escáneres',
       'Muebles de Oficina',
       'Sillas',
       'Insumos de Oficina',
+      'Smart TVs',
+      'Lámparas LED',
     ],
   },
   {
     name: 'Audio y Video',
     icon: Headphones,
-    subcategories: ['Auriculares', 'Parlantes', 'Micrófonos', 'Televisores', 'Proyectores'],
+    sub: [
+      'Auriculares',
+      'Parlantes',
+      'Micrófonos',
+      'Televisores',
+      'Proyectores',
+      'Soundbars',
+      'Mixers',
+      'Webcams',
+    ],
   },
   {
     name: 'Otras Categorías',
-    icon: Grid,
-    subcategories: ['Juguetes y Juegos', 'Puntos de Venta', 'Selfie Sticks', 'Cargadores', 'Pilas'],
+    icon: GridIcon,
+    sub: [
+      'Juguetes y Juegos',
+      'Puntos de Venta',
+      'Selfie Sticks',
+      'Cargadores',
+      'Pilas',
+      'Mochilas',
+      'Adaptadores',
+      'Accesorios Varios',
+    ],
   },
   {
     name: 'Domótica',
     icon: Zap,
-    subcategories: [
+    sub: [
       'Iluminación Inteligente',
-      'Cámaras de Seguridad',
+      'Cámaras',
       'Termostatos',
       'Enchufes Smart',
       'Sensores',
+      'Controladores de Voz',
+      'Aspiradoras Robot',
     ],
   },
 ];
 
-export function FuturisticNavbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [searchValue, setSearchValue] = useState('');
-  const [cartItems, setCartItems] = useState(0);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+// --- Sugerencias rápidas
+const quickSuggestions = [
+  'RTX 5090',
+  'PlayStation 6',
+  'MacBook Pro M4',
+  'iPhone 16 Pro',
+  'Teclado 60%',
+  'Router Wi-Fi 7',
+];
 
+export function FuturisticNavbar() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [searchValue, setSearchValue] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [cartItems] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Detectar móvil (<768px)
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 60);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  function getCircleColor(idx: number) {
-    return [
-      'bg-[var(--color-primary)]/10',
-      'bg-[var(--color-accent)]/12',
-      'bg-[var(--color-grey)]/12',
-      'bg-[var(--color-accent)]/18',
-    ][idx % 4];
-  }
+  // Bloqueo de scroll al abrir sidebar
+  useEffect(() => {
+    document.body.style.overflow = isSidebarOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [isSidebarOpen]);
+
+  // Scroll para blur en nav
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const toggleSidebar = useCallback(() => setIsSidebarOpen(o => !o), []);
+  const handleCategoryClick = useCallback(
+    (name: string) => setActiveCategory(prev => (prev === name ? null : name)),
+    []
+  );
+
+  // Logo dinámico y tamaños
+  const logoSrc = (isMobile || isSidebarOpen) ? '/logos/logo_.png' : '/logos/logo.png';
+  const logoWidth = (isMobile || isSidebarOpen) ? 40 : 126;
+  const logoHeight = (isMobile || isSidebarOpen) ? 40 : 38;
+
+  // Estilos
+  const glass = 'backdrop-blur-xl bg-white/30 ring-1 ring-[#ffe59c]/40 shadow-md transition-all';
+  const iconColor = 'text-yellow-900/80';
+  const accent = 'from-[#FFF9CD] via-[#FFE756] to-[#FFC800]';
 
   return (
     <>
       {/* NAVBAR */}
       <motion.nav
-        initial={{ y: -90, opacity: 0 }}
+        initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ type: 'spring', stiffness: 80, damping: 18 }}
+        transition={{ type: 'spring', stiffness: 130, damping: 20 }}
         className={`
-          fixed inset-x-0 top-0 z-50
-          transition-all duration-300
-          border-b border-[var(--color-vellum)]/60
-          shadow-[0_8px_32px_0_rgba(4,68,172,0.1)]
-          backdrop-blur-3xl
-          bg-[rgba(244,247,251,0.9)] dark:bg-[rgba(4,68,172,0.95)]
+          fixed inset-x-0 top-0 z-50 bg-gradient-to-b ${accent}
+          ${scrolled ? 'shadow-lg bg-opacity-90 backdrop-blur-xl' : 'bg-opacity-100'}
         `}
+        style={{ minHeight: '72px' }}
+        aria-label="Barra de navegación principal"
       >
-        <div className="mx-auto flex h-[96px] max-w-7xl items-center px-4 md:px-6 xl:px-16 justify-between gap-4">
-          {/* LOGO PREMIUM */}
-          <Link href="/" className="flex items-center relative select-none">
-            <motion.div
-              initial={{ scale: 1.4, filter: 'brightness(1) drop-shadow(0 0 20px #39e5ff66)' }}
-              whileHover={{
-                scale: 1.3,
-                filter: [
-                  'brightness(1.2) drop-shadow(0 0 40px #41f9ffcc)',
-                  'brightness(1.1) drop-shadow(0 0 28px #15d2ffd0)',
-                ],
-              }}
-              transition={{ type: 'spring', stiffness: 250, damping: 20 }}
-              className="relative flex items-center justify-center w-[112px] h-[48px] z-20"
-            >
-              <Image
-                src="/logos/logo.png"
-                alt="Logo Mercart"
-                width={112}
-                height={48}
-                priority
-                className="object-contain border-l-inherit select-none"
-                style={{
-                  filter:
-                    'drop-shadow(0 0 10px #fff) drop-shadow(0 0 20px #39e5ffcc) drop-shadow(0 0 5px #15d2ffd0)',
-                }}
-              />
-              {/* FLARE LUMINOSO */}
-              <motion.span
-                initial={{ x: '-70%', opacity: 0.1 }}
-                animate={{ x: ['-70%', '120%'], opacity: [0.1, 0.8, 0.1] }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute left-0 top-1/2 w-3/4 h-1/4 bg-gradient-to-r from-white/90 to-white/0 rounded-full blur-[12px] pointer-events-none"
-              />
-            </motion.div>
+        <div className="mx-auto flex h-[72px] max-w-[1600px] items-center px-4 sm:px-6 gap-4">
+          {/* Logo */}
+          <Link href="/" className="flex-shrink-0">
+            <Image
+              src={logoSrc}
+              alt="Mercart"
+              width={logoWidth}
+              height={logoHeight}
+              priority
+              className="transition-transform duration-200 hover:scale-105"
+              style={{ filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.15))' }}
+            />
           </Link>
 
-          {/* BUSCADOR */}
-          <div className="flex-1 max-w-2xl mx-4 hidden md:flex">
-            <div className="relative w-full">
-              <Input
-                placeholder="Buscar tecnología del futuro…"
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                className={`
-                  bg-[rgba(255,255,255,0.2)] border-[var(--color-accent)]/50
-                  pl-14 pr-4 text-[var(--color-primary)] font-medium
-                  placeholder:text-[var(--color-accent)]/80
-                  rounded-3xl shadow-lg focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]
-                  h-14
-                `}
-                style={{ backdropFilter: 'blur(12px)' }}
-              />
-              <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-6 w-6 text-[var(--color-accent)] pointer-events-none" />
+          {/* Buscador */}
+          <div className="flex flex-1 justify-center">
+            <div className="relative w-full max-w-md sm:max-w-lg lg:max-w-xl flex items-center">
+              <form
+                className={`flex items-center w-full rounded-full ${glass} focus-within:ring-2 focus-within:ring-[#FFD500]/60`}
+                onSubmit={e => e.preventDefault()}
+              >
+                <Input
+                  ref={inputRef}
+                  placeholder="Buscar tecnología del futuro…"
+                  value={searchValue}
+                  onChange={e => setSearchValue(e.target.value)}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                  className="flex-grow h-10 bg-transparent px-4 text-base placeholder-black/50 border-none focus:outline-none font-medium"
+                  style={{ color: '#6b5527' }}
+                  autoComplete="off"
+                />
+                <button type="submit" className="p-2 rounded-full hover:bg-white/40 transition">
+                  <Search className="h-5 w-5 text-yellow-800" />
+                </button>
+                <button type="button" className="p-2 rounded-full hover:bg-white/40 transition">
+                  <Mic className="h-5 w-5 text-yellow-800/60" />
+                </button>
+              </form>
+
+              {/* Ofertas: solo md+ */}
+              <Link href="/ofertas" className="ml-3 hidden md:flex">
+                <button
+                  className={`
+                    px-4 py-2 rounded-full flex items-center gap-1.5 font-semibold
+                    bg-gradient-to-br from-[#FFF9CD] via-[#FFE756] to-[#FFC800]
+                    shadow-inner shadow-yellow-300/50
+                    ring-1 ring-[#e6ce7e]
+                    text-yellow-900 uppercase tracking-wide
+                    hover:from-[#fff8d2] hover:to-[#fffacd]
+                    transition-all duration-200
+                  `}
+                >
+                  <Sparkle className="w-4 h-4" />
+                  Ofertas
+                </button>
+              </Link>
             </div>
+
+            {/* Sugerencias */}
+            <AnimatePresence>
+              {showSuggestions && !searchValue && (
+                <motion.ul
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-[90%] max-w-md bg-white rounded-xl shadow-lg ring-1 ring-[#e6ce7e] overflow-hidden"
+                >
+                  {quickSuggestions.map(s => (
+                    <li key={s}>
+                      <button
+                        type="button"
+                        onMouseDown={() => { setSearchValue(s); inputRef.current?.focus(); }}
+                        className="block w-full px-4 py-2 text-left text-sm text-yellow-900 hover:bg-[#FFF9CD]/80 transition"
+                      >
+                        {s}
+                      </button>
+                    </li>
+                  ))}
+                </motion.ul>
+              )}
+            </AnimatePresence>
           </div>
 
-          {/* ICONOS DERECHA */}
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="bg-[var(--color-vellum)]/70 hover:bg-[var(--color-accent)]/20 shadow-lg rounded-full">
-              <Heart className="h-6 w-6 text-[var(--color-primary)]" />
+          {/* Acciones */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSidebar}
+              className={`${glass} rounded-full hover:scale-110`}
+              aria-label="Menú de categorías"
+            >
+              <GridIcon className={`h-6 w-6 ${iconColor}`} />
             </Button>
-            <Button variant="ghost" size="icon" className="relative bg-[var(--color-vellum)]/70 hover:bg-[var(--color-accent)]/20 shadow-lg rounded-full">
-              <ShoppingCart className="h-6 w-6 text-[var(--color-primary)]" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`${glass} relative rounded-full hover:scale-110`}
+              aria-label="Carrito"
+            >
+              <ShoppingCart className={`h-6 w-6 ${iconColor}`} />
               {cartItems > 0 && (
-                <Badge className="absolute -top-2 -right-2 bg-[var(--color-accent)] text-xs text-white border-2 border-white shadow-sm">
+                <Badge className="absolute -top-1 -right-1 animate-pulse bg-black text-white text-xs border-2 border-white">
                   {cartItems}
                 </Badge>
               )}
             </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="bg-[var(--color-vellum)]/70 hover:bg-[var(--color-accent)]/20 shadow-lg rounded-full">
-                  <User className="h-6 w-6 text-[var(--color-primary)]" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-white dark:bg-[rgba(4,68,172,0.95)] border-none shadow-2xl backdrop-blur-[16px]">
-                {isLoggedIn ? (
-                  <>
-                    <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="transition transform hover:scale-105 hover:bg-[var(--color-accent)]/20">
-                      <User className="mr-2 h-5 w-5" />Perfil
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="transition transform hover:scale-105 hover:bg-[var(--color-accent)]/20">
-                      <Heart className="mr-2 h-5 w-5" />Lista de Deseos
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="transition transform hover:scale-105 hover:bg-[var(--color-accent)]/20">
-                      <ShoppingCart className="mr-2 h-5 w-5" />Mis Pedidos
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => setIsLoggedIn(false)}>
-                      Cerrar Sesión
-                    </DropdownMenuItem>
-                  </>
-                ) : (
-                  <>
-                    <DropdownMenuItem onClick={() => setIsLoggedIn(true)} className="transition transform hover:scale-105 hover:bg-[var(--color-accent)]/20">
-                      <LogIn className="mr-2 h-5 w-5" />Iniciar Sesión
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="transition transform hover:scale-105 hover:bg-[var(--color-accent)]/20">
-                      <UserPlus className="mr-2 h-5 w-5" />Registrarse
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button variant="ghost" size="icon" className="md:hidden bg-[var(--color-vellum)]/70 hover:bg-[var(--color-accent)]/20 shadow-lg rounded-full" onClick={() => setIsMenuOpen(true)}>
-              <Menu className="h-6 w-6 text-[var(--color-primary)]" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`${glass} rounded-full hover:scale-110`}
+              aria-label="Cuenta"
+            >
+              <User className={`h-6 w-6 ${iconColor}`} />
             </Button>
-          </div>
-        </div>
-
-        {/* CATEGORÍAS DESKTOP */}
-        <div className="border-t border-[var(--color-vellum)]/50 bg-[rgba(244,247,251,0.9)] dark:bg-[rgba(4,68,172,0.95)] hidden lg:block">
-          <div className="mx-auto max-w-7xl px-4">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-8 gap-4 py-3 justify-items-center">
-              {categories.map((cat, idx) => (
-                <DropdownMenu key={cat.name}>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className={`
-                        flex w-full items-center space-x-2 rounded-2xl
-                        transition-shadow duration-150
-                        hover:shadow-lg hover:bg-[var(--color-accent)]/25
-                        text-[var(--color-grey)] px-4 py-2 border-none
-                      `}
-                    >
-                      <span
-                        className={`
-                          flex items-center justify-center w-10 h-10 rounded-full
-                          shadow-md ${getCircleColor(idx)}
-                          group-hover:bg-[var(--color-accent)]/30 transition-colors
-                        `}
-                      >
-                        <cat.icon className="w-6 h-6 text-[var(--color-accent)] group-hover:text-[var(--color-primary)]" />
-                      </span>
-                      <span className="font-semibold">{cat.name}</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="bg-white dark:bg-[rgba(4,68,172,0.97)] shadow-2xl border-none backdrop-blur-[14px] min-w-[180px] py-2">
-                    {cat.subcategories.map((sub) => (
-                      <DropdownMenuItem
-                        key={sub}
-                        className="px-4 py-2 transition transform hover:scale-105 hover:bg-[var(--color-accent)]/25 hover:text-[var(--color-primary)]"
-                      >
-                        {sub}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ))}
-            </div>
           </div>
         </div>
       </motion.nav>
 
-      {/* MENÚ MOBILE */}
+      {/* SIDEBAR DE CATEGORÍAS */}
       <AnimatePresence>
-        {isMenuOpen && (
+        {isSidebarOpen && (
           <>
+            {/* Desktop / Tablet */}
             <motion.aside
-              initial={{ opacity: 0, x: '100%' }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: '100%' }}
-              transition={{ type: 'spring', damping: 22, stiffness: 180 }}
-              className="fixed inset-y-0 right-0 z-50 w-full max-w-sm bg-[var(--color-vellum)]/95 border-l border-[var(--color-accent)]/22 backdrop-blur-2xl p-6 space-y-6 overflow-y-auto md:hidden shadow-2xl"
+              initial={{ x: -300, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -300, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 120, damping: 20 }}
+              className="hidden md:flex fixed left-0 top-[72px] bottom-0 z-50 w-80 flex-col overflow-y-auto bg-gradient-to-b from-[#FFF9CD] via-[#FFE756] to-[#FFC800] shadow-2xl ring-1 ring-yellow-200"
+              style={{ borderTopRightRadius: '1.5rem', borderBottomRightRadius: '1.5rem' }}
+              aria-label="Menú de categorías"
             >
-              <div className="flex items-center justify-between">
-                <h2 className="font-orbitron text-xl text-[var(--color-accent)]">Menú</h2>
-                <Button variant="ghost" size="icon" className="hover:bg-[var(--color-accent)]/20" onClick={() => setIsMenuOpen(false)}>
-                  <X className="h-6 w-6 text-[var(--color-primary)]" />
+              <div className="flex items-center justify-between h-20 px-6">
+                <h2 className="text-2xl font-bold text-yellow-900">Categorías</h2>
+                <Button variant="ghost" size="icon" onClick={toggleSidebar}>
+                  <X className="h-6 w-6 text-yellow-800" />
                 </Button>
               </div>
-              <div className="relative">
-                <Input
-                  placeholder="Buscar…"
-                  value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
-                  className="bg-[rgba(240,245,255,0.15)] border-[var(--color-accent)]/50 pl-12 text-[var(--color-primary)] placeholder:text-[var(--color-accent)]/80 rounded-xl"
-                  style={{ backdropFilter: 'blur(8px)' }}
-                />
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--color-accent)]" />
-              </div>
-              <div className="space-y-2">
-                {categories.map((cat, idx) => (
-                  <details key={cat.name} className="group">
-                    <summary className="flex cursor-pointer items-center space-x-3 rounded-lg p-3 transition-colors hover:bg-[var(--color-accent)]/20">
-                      <span
+              <nav className="px-4 pb-6 space-y-2">
+                {categories.map(cat => {
+                  const isActive = activeCategory === cat.name;
+                  const Icon = cat.icon;
+                  return (
+                    <div key={cat.name}>
+                      <button
+                        onClick={() => handleCategoryClick(cat.name)}
                         className={`
-                          flex items-center justify-center w-9 h-9 rounded-full
-                          ${getCircleColor(idx)} transition-colors
+                          flex w-full items-center gap-3 px-4 py-3 rounded-lg transition
+                          ${isActive
+                            ? 'bg-white shadow-md ring-1 ring-yellow-200'
+                            : 'hover:bg-white/90'}
                         `}
                       >
-                        <cat.icon className="h-5 w-5 text-[var(--color-accent)]" />
-                      </span>
-                      <span className="font-semibold text-[var(--color-primary)]">{cat.name}</span>
-                    </summary>
-                    <div className="ml-8 mt-2 space-y-1">
-                      {cat.subcategories.map((sub) => (
-                        <Link
-                          key={sub}
-                          href={`/category/${cat.name.toLowerCase().replace(/\s+/g, '-')}/${sub
-                            .toLowerCase()
-                            .replace(/\s+/g, '-')}`}
-                          className="block p-2 rounded-md transition transform hover:scale-105 hover:bg-[var(--color-accent)]/20 hover:text-[var(--color-primary)]"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          {sub}
-                        </Link>
-                      ))}
+                        <Icon className="h-5 w-5 text-yellow-900" />
+                        <span className="flex-1 font-medium text-yellow-900">{cat.name}</span>
+                        <ChevronRight className={`h-4 w-4 transition-transform ${isActive ? 'rotate-90' : ''}`} />
+                      </button>
+                      <AnimatePresence>
+                        {isActive && (
+                          <motion.ul
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="pl-8 mt-2 space-y-1"
+                          >
+                            {cat.sub.map(sub => (
+                              <li key={sub}>
+                                <Link
+                                  href={`/${encodeURIComponent(cat.name)}/${encodeURIComponent(sub)}`}
+                                  className="flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium text-yellow-900 hover:bg-yellow-100"
+                                >
+                                  <ChevronRight className="h-4 w-4 text-yellow-700" />
+                                  {sub}
+                                </Link>
+                              </li>
+                            ))}
+                          </motion.ul>
+                        )}
+                      </AnimatePresence>
                     </div>
-                  </details>
-                ))}
-              </div>
+                  );
+                })}
+              </nav>
             </motion.aside>
 
+            {/* Mobile */}
+            <motion.div
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', stiffness: 130, damping: 22 }}
+              className="md:hidden fixed left-0 top-[72px] bottom-0 z-50 w-80 bg-gradient-to-b from-[#FFF9CD] via-[#FFE756] to-[#FFC800] shadow-2xl ring-1 ring-yellow-200 p-5 overflow-y-auto"
+              style={{ borderTopRightRadius: '1.5rem', borderBottomRightRadius: '1.5rem' }}
+              aria-label="Menú móvil de categorías"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-yellow-900">Categorías</h2>
+                <Button variant="ghost" size="icon" onClick={toggleSidebar}>
+                  <X className="h-6 w-6 text-yellow-800" />
+                </Button>
+              </div>
+              <nav className="space-y-2">
+                {categories.map(cat => {
+                  const isActive = activeCategory === cat.name;
+                  const Icon = cat.icon;
+                  return (
+                    <div key={cat.name}>
+                      <button
+                        onClick={() => handleCategoryClick(cat.name)}
+                        className={`
+                          flex w-full items-center gap-3 px-4 py-3 rounded-lg transition
+                          ${isActive
+                            ? 'bg-white shadow-md ring-1 ring-yellow-200'
+                            : 'hover:bg-white/90'}
+                        `}
+                      >
+                        <Icon className="h-5 w-5 text-yellow-900" />
+                        <span className="flex-1 font-medium text-yellow-900">{cat.name}</span>
+                        <ChevronRight className={`h-4 w-4 transition-transform ${isActive ? 'rotate-90' : ''}`} />
+                      </button>
+                      {isActive && (
+                        <ul className="pl-8 mt-2 space-y-1">
+                          {cat.sub.map(sub => (
+                            <li key={sub}>
+                              <Link
+                                href={`/${encodeURIComponent(cat.name)}/${encodeURIComponent(sub)}`}
+                                onClick={toggleSidebar}
+                                className="flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium text-yellow-900 hover:bg-yellow-100"
+                              >
+                                <ChevronRight className="h-4 w-4 text-yellow-700" />
+                                {sub}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  );
+                })}
+              </nav>
+            </motion.div>
+
+            {/* Overlay */}
             <motion.div
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              animate={{ opacity: 0.3 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 bg-black/40 backdrop-blur-md"
-              onClick={() => setIsMenuOpen(false)}
+              onClick={toggleSidebar}
+              className="fixed inset-0 bg-black/80 z-40"
             />
           </>
         )}
