@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -13,12 +14,13 @@ import {
   LogIn,
   UserPlus,
   Cpu,
-  Smartphone,
   Gamepad2,
-  Glasses,
-  Brain,
-  Bot,
-  Watch
+  Server,
+  Wifi,
+  Home,
+  Headphones,
+  Grid,
+  Zap,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,40 +36,82 @@ import { Badge } from '@/components/ui/badge';
 
 const categories = [
   {
-    name: 'Computadoras',
-    icon: Cpu,
-    subcategories: ['Laptops Cuánticas', 'PCs Holográficas', 'Servidores IA']
-  },
-  {
-    name: 'Móviles',
-    icon: Smartphone,
-    subcategories: ['Smartphones Plegables', 'Tablets Neurales', 'Comunicadores']
-  },
-  {
-    name: 'Gaming',
+    name: 'Gaming y Streaming',
     icon: Gamepad2,
-    subcategories: ['Consolas Inmersivas', 'VR Gaming', 'Accesorios Hápticos']
+    subcategories: [
+      'Productos Digitales',
+      'Juegos Digitales',
+      'Accesorios Gaming',
+      'Streaming',
+    ],
   },
   {
-    name: 'Realidad Virtual',
-    icon: Glasses,
-    subcategories: ['Cascos RV', 'Lentes AR', 'Guantes Hápticos']
+    name: 'Computación',
+    icon: Cpu,
+    subcategories: [
+      'Notebooks',
+      'PCs Armados',
+      'All-in-One',
+      'Tabletas',
+      'Tabletas Gráficas',
+      'Periféricos',
+    ],
   },
   {
-    name: 'Inteligencia Artificial',
-    icon: Brain,
-    subcategories: ['Asistentes IA', 'Chips Neurales', 'Servidores IA']
+    name: 'Componentes',
+    icon: Server,
+    subcategories: [
+      'Tarjetas de Video',
+      'Procesadores',
+      'Placas Madre',
+      'Memorias RAM',
+      'Almacenamiento',
+      'Fuentes de Poder',
+    ],
   },
   {
-    name: 'Robótica',
-    icon: Bot,
-    subcategories: ['Robots Domésticos', 'Drones IA', 'Exoesqueletos']
+    name: 'Conectividad y Redes',
+    icon: Wifi,
+    subcategories: [
+      'Routers',
+      'Switches',
+      'Cables de Red',
+      'Tarjetas de Red',
+      'Puntos de Acceso',
+    ],
   },
   {
-    name: 'Wearables',
-    icon: Watch,
-    subcategories: ['Smartwatch Bio', 'Implantes', 'Ropa Inteligente']
-  }
+    name: 'Hogar y Oficina',
+    icon: Home,
+    subcategories: [
+      'Impresoras',
+      'Escáneres',
+      'Muebles de Oficina',
+      'Sillas',
+      'Insumos de Oficina',
+    ],
+  },
+  {
+    name: 'Audio y Video',
+    icon: Headphones,
+    subcategories: ['Auriculares', 'Parlantes', 'Micrófonos', 'Televisores', 'Proyectores'],
+  },
+  {
+    name: 'Otras Categorías',
+    icon: Grid,
+    subcategories: ['Juguetes y Juegos', 'Puntos de Venta', 'Selfie Sticks', 'Cargadores', 'Pilas'],
+  },
+  {
+    name: 'Domótica',
+    icon: Zap,
+    subcategories: [
+      'Iluminación Inteligente',
+      'Cámaras de Seguridad',
+      'Termostatos',
+      'Enchufes Smart',
+      'Sensores',
+    ],
+  },
 ];
 
 export function FuturisticNavbar() {
@@ -78,151 +122,183 @@ export function FuturisticNavbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-
+    const handleScroll = () => setIsScrolled(window.scrollY > 60);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  function getCircleColor(idx: number) {
+    return [
+      'bg-[var(--color-primary)]/10',
+      'bg-[var(--color-accent)]/12',
+      'bg-[var(--color-grey)]/12',
+      'bg-[var(--color-accent)]/18',
+    ][idx % 4];
+  }
+
   return (
     <>
+      {/* NAVBAR */}
       <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled 
-            ? 'glass-dark shadow-lg shadow-cyan-500/20' 
-            : 'bg-transparent'
-        }`}
+        initial={{ y: -90, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 80, damping: 18 }}
+        className={`
+          fixed inset-x-0 top-0 z-50
+          transition-all duration-300
+          border-b border-[var(--color-vellum)]/60
+          shadow-[0_8px_32px_0_rgba(4,68,172,0.1)]
+          backdrop-blur-3xl
+          bg-[rgba(244,247,251,0.9)] dark:bg-[rgba(4,68,172,0.95)]
+        `}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link href="/" className="flex items-center space-x-2 group">
-              <motion.div
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.6 }}
-                className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-lg flex items-center justify-center"
-              >
-                <Cpu className="w-5 h-5 text-white" />
-              </motion.div>
-              <span className="font-orbitron text-xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-                TechVerse 3000
-              </span>
-            </Link>
+        <div className="mx-auto flex h-[96px] max-w-7xl items-center px-4 md:px-6 xl:px-16 justify-between gap-4">
+          {/* LOGO PREMIUM */}
+          <Link href="/" className="flex items-center relative select-none">
+            <motion.div
+              initial={{ scale: 1.4, filter: 'brightness(1) drop-shadow(0 0 20px #39e5ff66)' }}
+              whileHover={{
+                scale: 1.3,
+                filter: [
+                  'brightness(1.2) drop-shadow(0 0 40px #41f9ffcc)',
+                  'brightness(1.1) drop-shadow(0 0 28px #15d2ffd0)',
+                ],
+              }}
+              transition={{ type: 'spring', stiffness: 250, damping: 20 }}
+              className="relative flex items-center justify-center w-[112px] h-[48px] z-20"
+            >
+              <Image
+                src="/logos/logo.png"
+                alt="Logo Mercart"
+                width={112}
+                height={48}
+                priority
+                className="object-contain border-l-inherit select-none"
+                style={{
+                  filter:
+                    'drop-shadow(0 0 10px #fff) drop-shadow(0 0 20px #39e5ffcc) drop-shadow(0 0 5px #15d2ffd0)',
+                }}
+              />
+              {/* FLARE LUMINOSO */}
+              <motion.span
+                initial={{ x: '-70%', opacity: 0.1 }}
+                animate={{ x: ['-70%', '120%'], opacity: [0.1, 0.8, 0.1] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute left-0 top-1/2 w-3/4 h-1/4 bg-gradient-to-r from-white/90 to-white/0 rounded-full blur-[12px] pointer-events-none"
+              />
+            </motion.div>
+          </Link>
 
-            {/* Search Bar - Desktop */}
-            <div className="hidden md:flex flex-1 max-w-lg mx-8">
-              <div className="relative w-full">
-                <Input
-                  type="text"
-                  placeholder="Buscar tecnología del futuro..."
-                  value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
-                  className="glass border-cyan-500/30 focus:border-cyan-400 pl-10 pr-4 text-white placeholder:text-gray-400"
-                />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-cyan-400" />
-              </div>
+          {/* BUSCADOR */}
+          <div className="flex-1 max-w-2xl mx-4 hidden md:flex">
+            <div className="relative w-full">
+              <Input
+                placeholder="Buscar tecnología del futuro…"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                className={`
+                  bg-[rgba(255,255,255,0.2)] border-[var(--color-accent)]/50
+                  pl-14 pr-4 text-[var(--color-primary)] font-medium
+                  placeholder:text-[var(--color-accent)]/80
+                  rounded-3xl shadow-lg focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]
+                  h-14
+                `}
+                style={{ backdropFilter: 'blur(12px)' }}
+              />
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-6 w-6 text-[var(--color-accent)] pointer-events-none" />
             </div>
+          </div>
 
-            {/* Navigation Icons */}
-            <div className="flex items-center space-x-4">
-              {/* Wishlist */}
-              <Button variant="ghost" size="icon" className="glass hover:bg-white/10 relative">
-                <Heart className="w-5 h-5 text-cyan-400" />
-              </Button>
-
-              {/* Cart */}
-              <Button variant="ghost" size="icon" className="glass hover:bg-white/10 relative">
-                <ShoppingCart className="w-5 h-5 text-cyan-400" />
-                {cartItems > 0 && (
-                  <Badge className="absolute -top-2 -right-2 bg-purple-500 text-white text-xs">
-                    {cartItems}
-                  </Badge>
-                )}
-              </Button>
-
-              {/* User Menu */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="glass hover:bg-white/10">
-                    <User className="w-5 h-5 text-cyan-400" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="glass border-cyan-500/30 text-white">
-                  {isLoggedIn ? (
-                    <>
-                      <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem>
-                        <User className="w-4 h-4 mr-2" />
-                        Perfil
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Heart className="w-4 h-4 mr-2" />
-                        Lista de Deseos
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <ShoppingCart className="w-4 h-4 mr-2" />
-                        Mis Pedidos
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => setIsLoggedIn(false)}>
-                        Cerrar Sesión
-                      </DropdownMenuItem>
-                    </>
-                  ) : (
-                    <>
-                      <DropdownMenuItem onClick={() => setIsLoggedIn(true)}>
-                        <LogIn className="w-4 h-4 mr-2" />
-                        Iniciar Sesión
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <UserPlus className="w-4 h-4 mr-2" />
-                        Registrarse
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              {/* Mobile Menu Button */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="md:hidden glass hover:bg-white/10"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-              >
-                {isMenuOpen ? (
-                  <X className="w-5 h-5 text-cyan-400" />
+          {/* ICONOS DERECHA */}
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" className="bg-[var(--color-vellum)]/70 hover:bg-[var(--color-accent)]/20 shadow-lg rounded-full">
+              <Heart className="h-6 w-6 text-[var(--color-primary)]" />
+            </Button>
+            <Button variant="ghost" size="icon" className="relative bg-[var(--color-vellum)]/70 hover:bg-[var(--color-accent)]/20 shadow-lg rounded-full">
+              <ShoppingCart className="h-6 w-6 text-[var(--color-primary)]" />
+              {cartItems > 0 && (
+                <Badge className="absolute -top-2 -right-2 bg-[var(--color-accent)] text-xs text-white border-2 border-white shadow-sm">
+                  {cartItems}
+                </Badge>
+              )}
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="bg-[var(--color-vellum)]/70 hover:bg-[var(--color-accent)]/20 shadow-lg rounded-full">
+                  <User className="h-6 w-6 text-[var(--color-primary)]" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="bg-white dark:bg-[rgba(4,68,172,0.95)] border-none shadow-2xl backdrop-blur-[16px]">
+                {isLoggedIn ? (
+                  <>
+                    <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="transition transform hover:scale-105 hover:bg-[var(--color-accent)]/20">
+                      <User className="mr-2 h-5 w-5" />Perfil
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="transition transform hover:scale-105 hover:bg-[var(--color-accent)]/20">
+                      <Heart className="mr-2 h-5 w-5" />Lista de Deseos
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="transition transform hover:scale-105 hover:bg-[var(--color-accent)]/20">
+                      <ShoppingCart className="mr-2 h-5 w-5" />Mis Pedidos
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => setIsLoggedIn(false)}>
+                      Cerrar Sesión
+                    </DropdownMenuItem>
+                  </>
                 ) : (
-                  <Menu className="w-5 h-5 text-cyan-400" />
+                  <>
+                    <DropdownMenuItem onClick={() => setIsLoggedIn(true)} className="transition transform hover:scale-105 hover:bg-[var(--color-accent)]/20">
+                      <LogIn className="mr-2 h-5 w-5" />Iniciar Sesión
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="transition transform hover:scale-105 hover:bg-[var(--color-accent)]/20">
+                      <UserPlus className="mr-2 h-5 w-5" />Registrarse
+                    </DropdownMenuItem>
+                  </>
                 )}
-              </Button>
-            </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="ghost" size="icon" className="md:hidden bg-[var(--color-vellum)]/70 hover:bg-[var(--color-accent)]/20 shadow-lg rounded-full" onClick={() => setIsMenuOpen(true)}>
+              <Menu className="h-6 w-6 text-[var(--color-primary)]" />
+            </Button>
           </div>
         </div>
 
-        {/* Categories Bar */}
-        <div className="hidden lg:block border-t border-cyan-500/20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-center space-x-8 py-3">
-              {categories.map((category, index) => (
-                <DropdownMenu key={category.name}>
+        {/* CATEGORÍAS DESKTOP */}
+        <div className="border-t border-[var(--color-vellum)]/50 bg-[rgba(244,247,251,0.9)] dark:bg-[rgba(4,68,172,0.95)] hidden lg:block">
+          <div className="mx-auto max-w-7xl px-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-8 gap-4 py-3 justify-items-center">
+              {categories.map((cat, idx) => (
+                <DropdownMenu key={cat.name}>
                   <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      className="flex items-center space-x-2 text-cyan-400 hover:text-white hover:bg-white/10 transition-all duration-300 group"
+                    <Button
+                      variant="ghost"
+                      className={`
+                        flex w-full items-center space-x-2 rounded-2xl
+                        transition-shadow duration-150
+                        hover:shadow-lg hover:bg-[var(--color-accent)]/25
+                        text-[var(--color-grey)] px-4 py-2 border-none
+                      `}
                     >
-                      <category.icon className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" />
-                      <span className="text-sm font-medium">{category.name}</span>
+                      <span
+                        className={`
+                          flex items-center justify-center w-10 h-10 rounded-full
+                          shadow-md ${getCircleColor(idx)}
+                          group-hover:bg-[var(--color-accent)]/30 transition-colors
+                        `}
+                      >
+                        <cat.icon className="w-6 h-6 text-[var(--color-accent)] group-hover:text-[var(--color-primary)]" />
+                      </span>
+                      <span className="font-semibold">{cat.name}</span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="glass border-cyan-500/30 text-white">
-                    {category.subcategories.map((sub) => (
-                      <DropdownMenuItem key={sub} className="hover:bg-white/10">
+                  <DropdownMenuContent className="bg-white dark:bg-[rgba(4,68,172,0.97)] shadow-2xl border-none backdrop-blur-[14px] min-w-[180px] py-2">
+                    {cat.subcategories.map((sub) => (
+                      <DropdownMenuItem
+                        key={sub}
+                        className="px-4 py-2 transition transform hover:scale-105 hover:bg-[var(--color-accent)]/25 hover:text-[var(--color-primary)]"
+                      >
                         {sub}
                       </DropdownMenuItem>
                     ))}
@@ -234,46 +310,55 @@ export function FuturisticNavbar() {
         </div>
       </motion.nav>
 
-      {/* Mobile Menu */}
+      {/* MENÚ MOBILE */}
       <AnimatePresence>
         {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: '100%' }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed inset-y-0 right-0 z-50 w-full max-w-sm glass-dark md:hidden"
-          >
-            <div className="flex flex-col h-full p-6 space-y-6">
-              {/* Search */}
+          <>
+            <motion.aside
+              initial={{ opacity: 0, x: '100%' }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: '100%' }}
+              transition={{ type: 'spring', damping: 22, stiffness: 180 }}
+              className="fixed inset-y-0 right-0 z-50 w-full max-w-sm bg-[var(--color-vellum)]/95 border-l border-[var(--color-accent)]/22 backdrop-blur-2xl p-6 space-y-6 overflow-y-auto md:hidden shadow-2xl"
+            >
+              <div className="flex items-center justify-between">
+                <h2 className="font-orbitron text-xl text-[var(--color-accent)]">Menú</h2>
+                <Button variant="ghost" size="icon" className="hover:bg-[var(--color-accent)]/20" onClick={() => setIsMenuOpen(false)}>
+                  <X className="h-6 w-6 text-[var(--color-primary)]" />
+                </Button>
+              </div>
               <div className="relative">
                 <Input
-                  type="text"
-                  placeholder="Buscar..."
+                  placeholder="Buscar…"
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
-                  className="glass border-cyan-500/30 focus:border-cyan-400 pl-10 text-white placeholder:text-gray-400"
+                  className="bg-[rgba(240,245,255,0.15)] border-[var(--color-accent)]/50 pl-12 text-[var(--color-primary)] placeholder:text-[var(--color-accent)]/80 rounded-xl"
+                  style={{ backdropFilter: 'blur(8px)' }}
                 />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-cyan-400" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--color-accent)]" />
               </div>
-
-              {/* Categories */}
               <div className="space-y-2">
-                <h3 className="font-orbitron text-lg font-semibold text-cyan-400 mb-4">
-                  Categorías
-                </h3>
-                {categories.map((category) => (
-                  <details key={category.name} className="group">
-                    <summary className="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 cursor-pointer list-none">
-                      <category.icon className="w-5 h-5 text-cyan-400" />
-                      <span className="text-white font-medium">{category.name}</span>
+                {categories.map((cat, idx) => (
+                  <details key={cat.name} className="group">
+                    <summary className="flex cursor-pointer items-center space-x-3 rounded-lg p-3 transition-colors hover:bg-[var(--color-accent)]/20">
+                      <span
+                        className={`
+                          flex items-center justify-center w-9 h-9 rounded-full
+                          ${getCircleColor(idx)} transition-colors
+                        `}
+                      >
+                        <cat.icon className="h-5 w-5 text-[var(--color-accent)]" />
+                      </span>
+                      <span className="font-semibold text-[var(--color-primary)]">{cat.name}</span>
                     </summary>
-                    <div className="ml-8 mt-2 space-y-2">
-                      {category.subcategories.map((sub) => (
+                    <div className="ml-8 mt-2 space-y-1">
+                      {cat.subcategories.map((sub) => (
                         <Link
                           key={sub}
-                          href={`/category/${category.name.toLowerCase()}/${sub.toLowerCase().replace(/\s+/g, '-')}`}
-                          className="block p-2 text-gray-300 hover:text-cyan-400 transition-colors"
+                          href={`/category/${cat.name.toLowerCase().replace(/\s+/g, '-')}/${sub
+                            .toLowerCase()
+                            .replace(/\s+/g, '-')}`}
+                          className="block p-2 rounded-md transition transform hover:scale-105 hover:bg-[var(--color-accent)]/20 hover:text-[var(--color-primary)]"
                           onClick={() => setIsMenuOpen(false)}
                         >
                           {sub}
@@ -283,21 +368,18 @@ export function FuturisticNavbar() {
                   </details>
                 ))}
               </div>
-            </div>
-          </motion.div>
+            </motion.aside>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40 bg-black/40 backdrop-blur-md"
+              onClick={() => setIsMenuOpen(false)}
+            />
+          </>
         )}
       </AnimatePresence>
-
-      {/* Overlay */}
-      {isMenuOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
-          onClick={() => setIsMenuOpen(false)}
-        />
-      )}
     </>
   );
 }

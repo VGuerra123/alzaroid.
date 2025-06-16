@@ -17,10 +17,10 @@ const exo2 = Exo_2({
 });
 
 export const metadata: Metadata = {
-  title: 'TechVerse 3000 - Tienda de Tecnología del Futuro',
-  description: 'La experiencia de compra tecnológica más avanzada del universo. Explora el futuro de la tecnología en TechVerse 3000.',
+  title: 'Mercart',
+  description: 'La experiencia de compra tecnológica más avanzada del planeta. Explora el futuro de la tecnología en Mercart.',
   keywords: ['tecnología', 'futuro', 'gadgets', 'electrónicos', 'innovación'],
-  authors: [{ name: 'TechVerse 3000' }],
+  authors: [{ name: 'VGuerra' }],
   viewport: 'width=device-width, initial-scale=1',
 };
 

@@ -1,177 +1,128 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 
 export function AnimatedBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationRef = useRef<number>();
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const canvas = canvasRef.current!;
+    const ctx = canvas.getContext('2d')!;
+    const dpr = window.devicePixelRatio || 1;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    let W = window.innerWidth;
+    let H = window.innerHeight;
 
-    // Set canvas size
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
+    function resize() {
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      canvas.style.width = `${W}px`;
+      canvas.style.height = `${H}px`;
+      ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
 
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+    // Paleta top-tier
+    const colors = [
+      { r: 17, g: 23, b: 56 },    // Azul profundo
+      { r: 38, g: 112, b: 236 },  // Azul brillante
+      { r: 23, g: 244, b: 255 },  // Celeste neón
+      { r: 210, g: 210, b: 255 }, // Blanco azulado
+    ];
 
-    // Particle system
-    const particles: Array<{
-      x: number;
-      y: number;
-      vx: number;
-      vy: number;
-      life: number;
-      maxLife: number;
-      size: number;
-      color: string;
-    }> = [];
+    // Animación
+    let t = 0;
 
-    const colors = ['#00ffff', '#ff00ff', '#ffff00', '#00ff00', '#ff0080'];
+    // Partículas pro, sólo zonas de baja interferencia visual
+    const PARTICLE_COUNT = Math.max(18, Math.floor((W * H) / 37000));
+    const particles = Array.from({ length: PARTICLE_COUNT }).map(() => ({
+      x: Math.random() * W,
+      y: Math.random() * (H * 0.78) + H * 0.18, // Nunca bajo navbar, ni muy arriba
+      radius: Math.random() * 1.7 + 0.8,
+      speed: Math.random() * 0.07 + 0.025,
+      alpha: Math.random() * 0.22 + 0.08,
+      direction: Math.random() < 0.5 ? 1 : -1,
+    }));
 
-    // Create particles
-    const createParticle = (x: number, y: number) => {
-      return {
-        x,
-        y,
-        vx: (Math.random() - 0.5) * 2,
-        vy: (Math.random() - 0.5) * 2,
-        life: 0,
-        maxLife: Math.random() * 100 + 50,
-        size: Math.random() * 3 + 1,
-        color: colors[Math.floor(Math.random() * colors.length)]
-      };
-    };
+    function drawGradient() {
+      // Gradiente diagonal animado
+      const grad = ctx.createLinearGradient(0, 0, W, H * 1.07);
+      for (let i = 0; i < colors.length; i++) {
+        // Animación ondulada de los stops (efecto "vivo", pero armónico)
+        const base = i / (colors.length - 1);
+        const offset = base + 0.16 * Math.sin(t + i * 1.3);
+        const col = colors[i];
+        grad.addColorStop(Math.max(0, Math.min(1, offset)), `rgb(${col.r},${col.g},${col.b})`);
+      }
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
 
-    // Initialize particles
-    for (let i = 0; i < 100; i++) {
-      particles.push(createParticle(
-        Math.random() * canvas.width,
-        Math.random() * canvas.height
-      ));
+      // Gradiente radial suave central para armonizar
+      const rGrad = ctx.createRadialGradient(W/2, H*0.58, Math.max(W, H)*0.05, W/2, H*0.58, Math.max(W, H)*0.7);
+      rGrad.addColorStop(0, 'rgba(80,230,255,0.09)');
+      rGrad.addColorStop(1, 'rgba(24,29,66,0.02)');
+      ctx.globalAlpha = 0.86;
+      ctx.fillStyle = rGrad;
+      ctx.fillRect(0, 0, W, H);
+      ctx.globalAlpha = 1.0;
     }
 
-    // Geometric shapes for background
-    const geometricShapes: Array<{
-      x: number;
-      y: number;
-      rotation: number;
-      size: number;
-      speed: number;
-      type: 'triangle' | 'hexagon' | 'diamond';
-    }> = [];
-
-    for (let i = 0; i < 20; i++) {
-      geometricShapes.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        rotation: 0,
-        size: Math.random() * 50 + 20,
-        speed: Math.random() * 0.02 + 0.01,
-        type: ['triangle', 'hexagon', 'diamond'][Math.floor(Math.random() * 3)] as 'triangle' | 'hexagon' | 'diamond'
-      });
-    }
-
-    const animate = () => {
-      ctx.fillStyle = 'rgba(10, 10, 15, 0.1)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Draw geometric shapes
-      geometricShapes.forEach(shape => {
+    function drawParticles() {
+      for (const p of particles) {
         ctx.save();
-        ctx.translate(shape.x, shape.y);
-        ctx.rotate(shape.rotation);
-        ctx.strokeStyle = `rgba(0, 255, 255, 0.1)`;
-        ctx.lineWidth = 1;
+        ctx.globalAlpha = p.alpha;
         ctx.beginPath();
-
-        switch (shape.type) {
-          case 'triangle':
-            ctx.moveTo(0, -shape.size);
-            ctx.lineTo(shape.size * 0.866, shape.size * 0.5);
-            ctx.lineTo(-shape.size * 0.866, shape.size * 0.5);
-            ctx.closePath();
-            break;
-          case 'hexagon':
-            for (let i = 0; i < 6; i++) {
-              const angle = (i * Math.PI) / 3;
-              const x = Math.cos(angle) * shape.size;
-              const y = Math.sin(angle) * shape.size;
-              if (i === 0) ctx.moveTo(x, y);
-              else ctx.lineTo(x, y);
-            }
-            ctx.closePath();
-            break;
-          case 'diamond':
-            ctx.moveTo(0, -shape.size);
-            ctx.lineTo(shape.size, 0);
-            ctx.lineTo(0, shape.size);
-            ctx.lineTo(-shape.size, 0);
-            ctx.closePath();
-            break;
-        }
-
-        ctx.stroke();
-        ctx.restore();
-
-        shape.rotation += shape.speed;
-        shape.x += Math.sin(shape.rotation) * 0.5;
-        shape.y += Math.cos(shape.rotation) * 0.3;
-
-        // Wrap around screen
-        if (shape.x > canvas.width + shape.size) shape.x = -shape.size;
-        if (shape.x < -shape.size) shape.x = canvas.width + shape.size;
-        if (shape.y > canvas.height + shape.size) shape.y = -shape.size;
-        if (shape.y < -shape.size) shape.y = canvas.height + shape.size;
-      });
-
-      // Update and draw particles
-      particles.forEach((particle, index) => {
-        particle.life++;
-        particle.x += particle.vx;
-        particle.y += particle.vy;
-
-        // Fade effect
-        const alpha = 1 - (particle.life / particle.maxLife);
-        
-        ctx.save();
-        ctx.globalAlpha = alpha;
-        ctx.fillStyle = particle.color;
+        ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI);
+        ctx.fillStyle = '#fff';
+        ctx.shadowColor = '#7bfff3';
         ctx.shadowBlur = 10;
-        ctx.shadowColor = particle.color;
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
 
-        // Remove dead particles
-        if (particle.life >= particle.maxLife) {
-          particles[index] = createParticle(
-            Math.random() * canvas.width,
-            Math.random() * canvas.height
-          );
-        }
+        // Movimiento horizontal suave y rebote
+        p.x += p.speed * p.direction;
+        if (p.x > W + p.radius) p.x = -p.radius;
+        if (p.x < -p.radius) p.x = W + p.radius;
+      }
+    }
 
-        // Wrap particles around screen
-        if (particle.x > canvas.width) particle.x = 0;
-        if (particle.x < 0) particle.x = canvas.width;
-        if (particle.y > canvas.height) particle.y = 0;
-        if (particle.y < 0) particle.y = canvas.height;
-      });
+    function drawOverlay() {
+      // Overlay glass/azulado muy suave (pro trick para visibilidad uniforme)
+      ctx.save();
+      ctx.globalAlpha = 0.22;
+      ctx.fillStyle = 'rgba(17,28,38,0.98)';
+      ctx.fillRect(0, 0, W, H);
 
-      requestAnimationFrame(animate);
-    };
+      // Glow inferior para separar sección hero/contenido
+      const gradBottom = ctx.createLinearGradient(0, H * 0.92, 0, H);
+      gradBottom.addColorStop(0, 'rgba(0,255,255,0)');
+      gradBottom.addColorStop(1, 'rgba(16, 220, 255, 0.17)');
+      ctx.globalAlpha = 0.56;
+      ctx.fillStyle = gradBottom;
+      ctx.fillRect(0, H * 0.91, W, H * 0.09);
 
+      ctx.globalAlpha = 1.0;
+      ctx.restore();
+    }
+
+    function animate() {
+      t += 0.0068;
+      ctx.clearRect(0, 0, W, H);
+      drawGradient();
+      drawParticles();
+      drawOverlay();
+      animationRef.current = requestAnimationFrame(animate);
+    }
     animate();
 
     return () => {
-      window.removeEventListener('resize', resizeCanvas);
+      window.removeEventListener('resize', resize);
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
   }, []);
 
@@ -179,7 +130,8 @@ export function AnimatedBackground() {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 w-full h-full pointer-events-none z-0"
-      style={{ background: 'transparent' }}
+      aria-hidden="true"
+      tabIndex={-1}
     />
   );
 }

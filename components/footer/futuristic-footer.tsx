@@ -1,34 +1,33 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { 
-  Cpu, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Facebook, 
-  Twitter, 
-  Instagram, 
+import {
+  Mail,
+  MapPin,
+  MessageCircle,  // simulamos WhatsApp
+  Facebook,
+  Instagram,
   Youtube,
   ArrowRight,
-  Zap
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { SiTiktok } from 'react-icons/si';     // ← nuevo icono TikTok
 
+/* ---------- DATA ---------- */
 const footerSections = [
   {
     title: 'Categorías',
     links: [
-      'Computadoras Cuánticas',
-      'Móviles del Futuro',
-      'Gaming Inmersivo',
-      'Realidad Virtual',
-      'Inteligencia Artificial',
-      'Robótica Avanzada',
-      'Tecnología Wearable'
-    ]
+      'Gaming y Streaming',
+      'Computación',
+      'Componentes',
+      'Conectividad y Redes',
+      'Hogar y Oficina',
+      'Audio y Video',
+      'Otras Categorías',
+      'Domótica',
+    ],
   },
   {
     title: 'Servicio al Cliente',
@@ -37,22 +36,22 @@ const footerSections = [
       'Soporte Técnico',
       'Garantías',
       'Devoluciones',
-      'Envíos Galácticos',
+      'Envíos',
       'Estado del Pedido',
-      'Contacto'
-    ]
+      'Contacto',
+    ],
   },
   {
     title: 'Empresa',
     links: [
-      'Sobre TechVerse',
-      'Misión Galáctica',
+      'Sobre Mercart',
+      'Nuestro Propósito',
       'Carreras',
       'Noticias',
       'Inversionistas',
       'Sostenibilidad',
-      'Colaboraciones'
-    ]
+      'Colaboraciones',
+    ],
   },
   {
     title: 'Legal',
@@ -63,60 +62,26 @@ const footerSections = [
       'Propiedad Intelectual',
       'Código de Conducta',
       'Cumplimiento',
-      'Ética IA'
-    ]
-  }
+      'Ética IA',
+    ],
+  },
 ];
 
 const socialLinks = [
   { icon: Facebook, href: '#', label: 'Facebook' },
-  { icon: Twitter, href: '#', label: 'Twitter' },
+  { icon: SiTiktok, href: '#', label: 'TikTok' },   // ← actual
   { icon: Instagram, href: '#', label: 'Instagram' },
-  { icon: Youtube, href: '#', label: 'YouTube' }
+  { icon: Youtube, href: '#', label: 'YouTube' },
 ];
 
+/* ---------- COMPONENT ---------- */
 export function FuturisticFooter() {
   return (
     <footer className="relative mt-20 glass border-t border-cyan-500/20">
-      {/* Newsletter Section */}
-      <div className="border-b border-cyan-500/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center"
-          >
-            <h3 className="font-orbitron text-2xl md:text-3xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-                Únete a la Revolución Tecnológica
-              </span>
-            </h3>
-            <p className="text-gray-300 mb-8 max-w-2xl mx-auto">
-              Recibe las últimas noticias sobre innovaciones del futuro, ofertas exclusivas 
-              y lanzamientos de productos directamente en tu comunicador neural.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-              <Input
-                type="email"
-                placeholder="tu.email@futuro.com"
-                className="glass border-cyan-500/30 focus:border-cyan-400 text-white placeholder:text-gray-400"
-              />
-              <Button className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white">
-                <Zap className="w-4 h-4 mr-2" />
-                Suscribirse
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-
-      {/* Main Footer Content */}
+      {/* MAIN SECTION */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
-          {/* Company Info */}
+          {/* BRAND + CONTACTO */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -124,67 +89,81 @@ export function FuturisticFooter() {
             viewport={{ once: true }}
             className="lg:col-span-2 space-y-6"
           >
-            <Link href="/" className="flex items-center space-x-2 group">
+            <Link href="/" className="flex items-center group">
               <motion.div
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.6 }}
-                className="w-10 h-10 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-lg flex items-center justify-center"
+                className="relative w-36 h-10"
               >
-                <Cpu className="w-6 h-6 text-white" />
+                <Image
+                  src="/logos/mercart_bw.png"
+                  alt="Mercart logo"
+                  fill
+                  priority
+                  className="object-contain"
+                />
               </motion.div>
-              <span className="font-orbitron text-2xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-                TechVerse 3000
-              </span>
             </Link>
-            
+
             <p className="text-gray-300 leading-relaxed">
-              Pioneros en tecnología del futuro, conectando la humanidad con las innovaciones 
-              más avanzadas del universo conocido. Tu portal hacia el mañana.
+              Innovación global al alcance de tu mano
             </p>
 
-            {/* Contact Info */}
+            {/* DATOS DE CONTACTO */}
             <div className="space-y-3">
               <div className="flex items-center space-x-3 text-gray-300">
                 <MapPin className="w-5 h-5 text-cyan-400" />
-                <span>Estación Espacial Alpha-7, Sector Galáctico 3000</span>
+                <span>Internacional</span>
               </div>
+
               <div className="flex items-center space-x-3 text-gray-300">
-                <Phone className="w-5 h-5 text-cyan-400" />
-                <span>+1 (555) FUTURO-1</span>
+                <MessageCircle className="w-5 h-5 text-cyan-400" />
+                <Link
+                  href="https://wa.me/15551234567"        // cámbialo cuando tengas el Nº real
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-cyan-400 transition-colors"
+                >
+                  +1&nbsp;(555)&nbsp;FUTURO-1
+                </Link>
               </div>
+
               <div className="flex items-center space-x-3 text-gray-300">
                 <Mail className="w-5 h-5 text-cyan-400" />
-                <span>contacto@techverse3000.com</span>
+                <Link
+                  href="mailto:mercart.chile@gmail.com"
+                  className="hover:text-cyan-400 transition-colors"
+                >
+                  mercart.chile@gmail.com
+                </Link>
               </div>
             </div>
 
-            {/* Social Links */}
+            {/* REDES SOCIALES */}
             <div className="flex space-x-4">
-              {socialLinks.map((social, index) => (
+              {socialLinks.map(({ icon: Icon, href, label }, idx) => (
                 <motion.a
-                  key={social.label}
-                  href={social.href}
+                  key={label}
+                  href={href}
+                  aria-label={label}
                   initial={{ opacity: 0, scale: 0 }}
                   whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                  transition={{ duration: 0.4, delay: idx * 0.1 }}
                   viewport={{ once: true }}
                   whileHover={{ scale: 1.1 }}
                   className="w-10 h-10 glass hover:bg-white/10 rounded-lg flex items-center justify-center transition-all duration-300 group"
-                  aria-label={social.label}
                 >
-                  <social.icon className="w-5 h-5 text-cyan-400 group-hover:text-white transition-colors" />
+                  <Icon className="w-5 h-5 text-cyan-400 group-hover:text-white transition-colors" />
                 </motion.a>
               ))}
             </div>
           </motion.div>
 
-          {/* Footer Sections */}
-          {footerSections.map((section, sectionIndex) => (
+          {/* LISTAS DE ENLACES */}
+          {footerSections.map((section, i) => (
             <motion.div
               key={section.title}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: sectionIndex * 0.1 }}
+              transition={{ duration: 0.6, delay: i * 0.1 }}
               viewport={{ once: true }}
               className="space-y-4"
             >
@@ -192,12 +171,12 @@ export function FuturisticFooter() {
                 {section.title}
               </h4>
               <ul className="space-y-3">
-                {section.links.map((link, linkIndex) => (
+                {section.links.map((link, j) => (
                   <motion.li
                     key={link}
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.4, delay: (sectionIndex * 0.1) + (linkIndex * 0.05) }}
+                    transition={{ duration: 0.4, delay: i * 0.1 + j * 0.05 }}
                     viewport={{ once: true }}
                   >
                     <Link
@@ -215,7 +194,7 @@ export function FuturisticFooter() {
         </div>
       </div>
 
-      {/* Bottom Bar */}
+      {/* BOTTOM BAR */}
       <div className="border-t border-cyan-500/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <motion.div
@@ -226,7 +205,7 @@ export function FuturisticFooter() {
             className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0"
           >
             <p className="text-sm text-gray-400">
-              © 3000 TechVerse 3000. Todos los derechos reservados en todas las dimensiones.
+              © 2025 Mercart. Todos los derechos reservados.
             </p>
             <div className="flex items-center space-x-6">
               <Link href="#" className="text-sm text-gray-400 hover:text-cyan-400 transition-colors">
@@ -243,7 +222,7 @@ export function FuturisticFooter() {
         </div>
       </div>
 
-      {/* Holographic Scanner Effect */}
+      {/* EFECTO HOLOGRÁFICO */}
       <motion.div
         className="absolute inset-0 pointer-events-none overflow-hidden"
         initial={{ opacity: 0 }}

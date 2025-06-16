@@ -1,170 +1,208 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Zap, Shield, Rocket, Star } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  Heart,
+  ShoppingCart,
+  Eye,
+  Star,
+  Zap,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 
-export function FuturisticHero() {
-  const [currentText, setCurrentText] = useState(0);
-  const [isClient, setIsClient] = useState(false);
-  
-  const heroTexts = [
-    "Bienvenido al Futuro",
-    "Tecnología del Año 3000",
-    "Innovación Sin Límites",
-    "El Mañana es Hoy"
-  ];
+type Product = {
+  id: string;
+  title: string;
+  description: string;
+  images: {
+    edges: {
+      node: {
+        src: string;
+        altText: string;
+      };
+    }[];
+  };
+  variants: {
+    edges: {
+      node: {
+        price: {
+          amount: string;
+          currencyCode: string;
+        };
+      };
+    }[];
+  };
+};
+
+const images: string[] = [
+  'https://d3okvk28mv0bs6.cloudfront.net/uploads/23b9a53d-ebb9-4c4d-8cfa-5370f5fe4f8a/original/Modyo-WEB-Banner-Pricipal-1792X49054051-51462_.webp',
+  'https://d3okvk28mv0bs6.cloudfront.net/uploads/9ff7d649-9a41-4cac-9eb8-e49f37831391/original/Modyo-WEB-Banner-Pricipal-1792X49054014-54191.webp',
+  'https://d3okvk28mv0bs6.cloudfront.net/uploads/d50ca9fb-1db9-4a24-b16b-80cc28cdc01b/original/Modyo-WEB-Banner-Principal-1792x490.webp',
+  'https://d3okvk28mv0bs6.cloudfront.net/uploads/962aa386-0d72-41eb-a1a3-8f3bb599a636/original/Modyo-WEB-Banner-Pricipal-1792X49052549-52550-.webp',
+];
+
+interface Props {
+  products: Product[];
+}
+
+export default function HeroYDestacados({ products }: Props) {
+  const [slide, setSlide] = useState(0);
+  const [wishlist, setWishlist] = useState<string[]>([]);
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setIsClient(true);
-    
-    const interval = setInterval(() => {
-      setCurrentText((prev) => (prev + 1) % heroTexts.length);
-    }, 3000);
-
-    return () => clearInterval(interval);
+    const iv = setInterval(() => setSlide((s) => (s + 1) % images.length), 5000);
+    return () => clearInterval(iv);
   }, []);
 
-  return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
-      {/* Floating Elements */}
-      {isClient && (
-        <div className="absolute inset-0 pointer-events-none">
-          {[...Array(20)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-2 h-2 bg-cyan-400 rounded-full opacity-60"
-              initial={{
-                x: Math.random() * window.innerWidth,
-                y: Math.random() * window.innerHeight,
-              }}
-              animate={{
-                x: Math.random() * window.innerWidth,
-                y: Math.random() * window.innerHeight,
-              }}
-              transition={{
-                duration: Math.random() * 10 + 10,
-                repeat: Infinity,
-                repeatType: "reverse",
-              }}
-            />
-          ))}
-        </div>
-      )}
+  const toggleWishlist = (id: string) =>
+    setWishlist((w) => (w.includes(id) ? w.filter((x) => x !== id) : [...w, id]));
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
-          className="space-y-8"
+  const formatPrice = (price: string, currency: string) =>
+    new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 0,
+    }).format(parseFloat(price));
+
+  return (
+    <main className="space-y-20">
+      {/* CAROUSEL */}
+      <section className="mt-56 flex justify-center">
+        <div
+          ref={ref}
+          className="relative w-[90vw] max-w-screen-lg h-[360px] rounded-2xl overflow-hidden shadow-[0_20px_40px_rgba(0,0,0,0.3)] border border-turquesa/30 bg-gradient-to-br from-blue-700 to-blue-800"
         >
-          {/* Animated Title */}
-          <div className="space-y-4">
-            <motion.h1
-              key={currentText}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.8 }}
-              className="font-orbitron text-4xl md:text-6xl lg:text-7xl font-bold"
-            >
-              <span className="bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 bg-clip-text text-transparent neon-text">
-                {heroTexts[currentText]}
-              </span>
-            </motion.h1>
-            
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.8 }}
-              className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed"
-            >
-              Explora la colección más avanzada de tecnología del universo. 
-              Desde computadoras cuánticas hasta inteligencia artificial consciente, 
-              todo lo que necesitas para conquistar el futuro está aquí.
-            </motion.p>
+          <AnimatePresence mode="wait">
+            <motion.img
+              key={slide}
+              src={images[slide]}
+              alt={`Slide ${slide + 1}`}
+              className="absolute inset-0 w-full h-full object-cover"
+              initial={{ opacity: 0, scale: 1.05 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.8, ease: 'easeInOut' }}
+              draggable={false}
+            />
+          </AnimatePresence>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSlide((s) => (s - 1 + images.length) % images.length)}
+            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30"
+          >
+            <ChevronLeft className="w-6 h-6 text-white" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSlide((s) => (s + 1) % images.length)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30"
+          >
+            <ChevronRight className="w-6 h-6 text-white" />
+          </Button>
+
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3">
+            {images.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setSlide(i)}
+                className={`w-3 h-3 rounded-full border-2 transition ${
+                  i === slide
+                    ? 'bg-white border-turquesa shadow'
+                    : 'bg-white/50 border-white/70 hover:scale-110'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PRODUCTOS DESTACADOS */}
+      <section className="px-4 sm:px-6 lg:px-8">
+        <div className="max-w-screen-lg mx-auto bg-white/10 backdrop-blur-lg p-8 rounded-2xl shadow-lg">
+          <div className="text-center mb-8">
+            <h2 className="font-orbitron text-4xl sm:text-5xl font-black text-white mb-2">
+              Productos Destacados
+            </h2>
+            <p className="text-lg text-white/80">
+              Encuentra lo último en tecnología con máxima profundidad y estilo minimalista.
+            </p>
           </div>
 
-          {/* CTA Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 0.6 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-          >
-            <Button 
-              size="lg" 
-              className="glass glow-border bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-semibold px-8 py-6 text-lg group"
-            >
-              Explorar Catálogo
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              size="lg"
-              className="glass border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 px-8 py-6 text-lg"
-            >
-              Ver Ofertas Especiales
-              <Zap className="ml-2 w-5 h-5" />
-            </Button>
-          </motion.div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {products.map((p, idx) => {
+              const price = p.variants.edges[0]?.node.price.amount || '0';
+              const currency = p.variants.edges[0]?.node.price.currencyCode || 'CLP';
+              const image = p.images.edges[0]?.node.src;
 
-          {/* Features Grid */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.2, duration: 0.8 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16"
-          >
-            {[
-              {
-                icon: Shield,
-                title: "Garantía Cuántica",
-                description: "Protección garantizada por 1000 años galácticos"
-              },
-              {
-                icon: Rocket,
-                title: "Envío Instantáneo",
-                description: "Teletransportación directa a tu ubicación"
-              },
-              {
-                icon: Star,
-                title: "Calidad Estelar",
-                description: "Certificado por la Federación Galáctica"
-              }
-            ].map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.4 + index * 0.2, duration: 0.6 }}
-                className="glass p-6 rounded-2xl hover:bg-white/10 transition-all duration-300 group"
-              >
-                <feature.icon className="w-8 h-8 text-cyan-400 mx-auto mb-4 group-hover:scale-110 transition-transform" />
-                <h3 className="font-orbitron text-lg font-semibold text-white mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-400 text-sm">
-                  {feature.description}
-                </p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </motion.div>
-      </div>
-
-      {/* Holographic Scanner Effect */}
-      <motion.div
-        className="absolute inset-0 pointer-events-none"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: [0, 0.3, 0] }}
-        transition={{ duration: 4, repeat: Infinity, repeatDelay: 2 }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent transform -skew-x-12" />
-      </motion.div>
-    </section>
+              return (
+                <motion.div
+                  key={p.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: idx * 0.1 }}
+                  viewport={{ once: true }}
+                  whileHover={{ rotateY: 4, rotateX: 4, scale: 1.02 }}
+                  style={{ perspective: 800 }}
+                  className="group"
+                >
+                  <Card className="bg-gradient-to-br from-blue-800 to-blue-900 text-white rounded-xl overflow-hidden shadow-xl transition-shadow hover:shadow-[0_30px_60px_rgba(0,0,0,0.4)]">
+                    <div className="relative">
+                      <img
+                        src={image}
+                        alt={p.title}
+                        className="w-full aspect-[4/3] object-cover"
+                        draggable={false}
+                      />
+                      <Badge className="absolute top-3 left-3 px-2 py-0.5 text-xs bg-turquesa text-white">
+                        DESTACADO
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-3 right-3 text-white/90 hover:text-red-400"
+                        onClick={() => toggleWishlist(p.id)}
+                      >
+                        <Heart className={`${wishlist.includes(p.id) ? 'fill-red-500' : ''}`} />
+                      </Button>
+                    </div>
+                    <CardContent className="p-4 space-y-1">
+                      <Badge variant="outline" className="text-xs border-white text-white/70">
+                        Shopify
+                      </Badge>
+                      <h3 className="text-base font-semibold">{p.title}</h3>
+                      <div className="flex items-center text-sm text-white/90">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="w-4 h-4 text-white/50" />
+                        ))}
+                        <span className="ml-2 text-sm text-white/50"> (sin rating)</span>
+                      </div>
+                      <div className="text-sm text-white/80 line-clamp-2">{p.description}</div>
+                      <div className="mt-2 flex items-baseline gap-2">
+                        <span className="text-2xl font-bold">
+                          {formatPrice(price, currency)}
+                        </span>
+                      </div>
+                      <Button className="w-full mt-3 py-2 bg-gradient-to-r from-turquesa to-deepblue text-white font-bold hover:from-turquesa/90 hover:to-deepblue/90">
+                        <ShoppingCart className="w-5 h-5 mr-2" />
+                        Añadir
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }
